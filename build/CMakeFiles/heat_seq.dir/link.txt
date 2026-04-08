@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/heat_seq.dir/src/main.cpp.o CMakeFiles/heat_seq.dir/src/solver.cpp.o CMakeFiles/heat_seq.dir/src/solver_sequential.cpp.o CMakeFiles/heat_seq.dir/src/grid.cpp.o CMakeFiles/heat_seq.dir/src/boundary.cpp.o CMakeFiles/heat_seq.dir/src/timer.cpp.o CMakeFiles/heat_seq.dir/src/config.cpp.o -o bin/heat_seq 

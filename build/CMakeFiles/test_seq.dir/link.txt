@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/test_seq.dir/tests/test_sequential.cpp.o CMakeFiles/test_seq.dir/src/solver_sequential.cpp.o CMakeFiles/test_seq.dir/src/grid.cpp.o CMakeFiles/test_seq.dir/src/boundary.cpp.o CMakeFiles/test_seq.dir/src/timer.cpp.o CMakeFiles/test_seq.dir/src/config.cpp.o -o bin/test_seq 

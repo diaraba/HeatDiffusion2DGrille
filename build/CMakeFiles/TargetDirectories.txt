@@ -1,0 +1,11 @@
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/heat_seq.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/heat_omp.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/heat_mpi.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/heat_hybrid.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/test_seq.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/edit_cache.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/rebuild_cache.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/list_install_components.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/install.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/install/local.dir
+/home/ashborn/DevProjects/HPC/HeatDiffusion2DGrille/build/CMakeFiles/install/strip.dir
