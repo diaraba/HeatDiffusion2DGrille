@@ -1,7 +1,8 @@
 #!/bin/bash
 # Script to run OpenMP version with different thread counts
 
-cd ..
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_DIR"
 mkdir -p build
 cd build
 cmake ..

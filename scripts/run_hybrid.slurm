@@ -13,8 +13,8 @@ module load gcc
 module load openmpi
 
 cd $SLURM_SUBMIT_DIR
-cd ..
-mkdir -p build
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_DIR"mkdir -p build
 cd build
 
 cmake ..

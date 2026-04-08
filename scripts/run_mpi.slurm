@@ -16,7 +16,8 @@ module load openmpi
 cd $SLURM_SUBMIT_DIR
 
 # Create build directory if needed
-cd ..
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$PROJECT_DIR"
 mkdir -p build
 cd build
 
