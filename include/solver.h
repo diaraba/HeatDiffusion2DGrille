@@ -70,7 +70,8 @@ class MPISolver : public Solver
 {
 private:
     int rank, size;
-    int coords[2];          // Cartesian coordinates
+    int coords[2]; // Cartesian coordinates
+    int dims[2];
     int neighbors[4];       // Neighbor ranks (left, right, bottom, top)
     int local_nx, local_ny; // Local grid dimensions (including halos)
     int global_nx, global_ny;

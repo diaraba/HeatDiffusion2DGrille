@@ -46,7 +46,7 @@ void MPISolver::setup_cartesian_communicator()
     // 3. Use MPI_Cart_create to create the communicator
     // 4. Use MPI_Cart_coords to get coordinates for this rank
     // 5. Use MPI_Cart_shift to find neighbors in each direction
-    int dims[2] = {0, 0};
+    // int dims[2] = {0, 0};
 
     MPI_Dims_create(size, 2, dims);
 
@@ -58,7 +58,7 @@ void MPISolver::setup_cartesian_communicator()
 
     MPI_Cart_shift(cart_comm, 0, 1, &neighbors[0], &neighbors[1]);
 
-    MPI_Cart_shift(cart_comm, 1, 1, &neighbord[2], &neighbors[3]);
+    MPI_Cart_shift(cart_comm, 1, 1, &neighbors[2], &neighbors[3]);
 
     std::cout << "Rank " << rank
               << " coords (" << coords[0] << "," << coords[1] << ")"
@@ -129,9 +129,9 @@ void MPISolver::initialize(const SimulationParams &params)
 
     dx = params.Lx / (params.Nx - 1);
     dy = params.Ly / (params.Ny - 1);
-    double h2 = std::min(dx * dy, dy * dy);
+    double h2 = std::min(dx * dx, dy * dy);
     dt = 0.25 * h2 / params.alpha;
-    factor = prams.alpha * dt / (dx * dx);
+    factor = params.alpha * dt / (dx * dx);
 }
 
 void MPISolver::exchange_halos()
@@ -154,7 +154,7 @@ void MPISolver::exchange_halos()
     for (int j = 1; j < ny - 1; j++)
     {
         send_left[j - 1] = (*local_grid_old)(1, j);
-        send_right[j - 1] = (*local_grid_old)(nx - 2, j)
+        send_right[j - 1] = (*local_grid_old)(nx - 2, j);
     }
 
     MPI_Sendrecv(send_left.data(), ny - 2, MPI_DOUBLE, neighbors[0], 0,
@@ -174,7 +174,7 @@ void MPISolver::exchange_halos()
     for (int i = 1; i < nx - 1; i++)
     {
         send_bottom[i - 1] = (*local_grid_old)(i, 1);
-        send_top[i - 1] = (*local_grid_old)(ny - 2, i);
+        send_top[i - 1] = (*local_grid_old)(i, ny - 2);
     }
 
     MPI_Sendrecv(send_bottom.data(), nx - 2, MPI_DOUBLE, neighbors[2], 2,
@@ -232,14 +232,14 @@ void MPISolver::exchange_halos_nonblocking()
     MPI_Isend(send_buffer_bottom, nx - 2, MPI_DOUBLE, neighbors[2], 3, cart_comm, &requests[req_count++]);
     MPI_Isend(send_buffer_top, nx - 2, MPI_DOUBLE, neighbors[3], 2, cart_comm, &requests[req_count++]);
     //    Wait for all communications to complete
-    MPI_Waitall(req, requests, MPI_STATUSES_IGNORE);
+    MPI_Waitall(req_count, requests, MPI_STATUSES_IGNORE);
 
     // Copie dans les halos droit, gauche, haut et bas
 
-    for (int j = 1; j < ny - 1, j++)
+    for (int j = 1; j < ny - 1; j++)
     {
         (*local_grid_old)(0, j) = recv_buffer_left[j - 1];
-        (*local_grid_old)(nx - 1, j) = recv_buffer_right[j - 1]
+        (*local_grid_old)(nx - 1, j) = recv_buffer_right[j - 1];
     }
     for (int i = 1; i < nx - 1; i++)
     {
@@ -278,10 +278,10 @@ void MPISolver::time_step()
         {
             double center = (*local_grid_old)(i, j);
             double left = (*local_grid_old)(i - 1, j);
-            double right = (*local_grid_old)(i + j, j);
+            double right = (*local_grid_old)(i + 1, j);
             double down = (*local_grid_old)(i, j - 1);
             double up = (*local_grid_old)(i, j + 1);
-            (*local_grid_old)(i, j) = center + factor * (left + right + down + up + 4.0 * center);
+            (*local_grid_new)(i, j) = center + factor * (left + right + down + up - 4.0 * center);
         }
     }
 
@@ -298,24 +298,24 @@ void MPISolver::time_step()
     {
         for (int j = 1; j < ny - 1; j++)
         {
-            (*local_grid_new)(1, j) = bc->get_type() == 0 ? bc->T_left : (*local_grid_old)(2, j)
+            (*local_grid_new)(1, j) = bc->get_type() == 0 ? bc->get_T_left() : (*local_grid_old)(2, j);
         }
     }
     // Droite global
-    if (coords[0])
+    if (coords[0] == dims[0] - 1)
     {
-        for (int i = 1; j < ny - 1; j++)
+        for (int j = 1; j < ny - 1; j++)
         {
-            (*local_grid_new)(nx - 2, j) = bc->get_type() == 0 ? bc->T_right : (*local_grid_new)(nx - 3, j);
+            (*local_grid_new)(nx - 2, j) = bc->get_type() == 0 ? bc->get_T_right() : (*local_grid_new)(nx - 3, j);
         }
     }
 
     // Bas global
     if (coords[1] == 0)
     {
-        for (int i; i < nx - 1; i++)
+        for (int i = 1; i < nx - 1; i++)
         {
-            (*local_grid_new)(i, ny - 2) = bc->get_type() == 0 ? bc->T_bottom : (*local_grid_new)(i, 2);
+            (*local_grid_new)(i, 1) = bc->get_type() == 0 ? bc->get_T_bottom() : (*local_grid_new)(i, 2);
         }
     }
     // Haut global
@@ -323,7 +323,7 @@ void MPISolver::time_step()
     {
         for (int i = 1; i < nx - 1; i++)
         {
-            (*local_grid_new)(i, ny - 2) = bc->get_type() == 0 ? bc->T_top : (*local_grid_new)(i, ny - 3);
+            (*local_grid_new)(i, ny - 2) = bc->get_type() == 0 ? bc->get_T_top() : (*local_grid_new)(i, ny - 3);
         }
     }
 }
@@ -405,12 +405,12 @@ void MPISolver::gather_results()
                 }
             }
         }
-        std::out << "Gather complete on rank 0" << std::endl;
+        std::cout << "Gather complete on rank 0" << std::endl;
     }
     else
     {
         // Send local grid to rank 0
-        MPI_SEND(send_buffer.data(), local_size, MPI_DOUBLE, 0, 0, cart_comm);
+        MPI_Send(send_buffer.data(), local_size, MPI_DOUBLE, 0, 0, cart_comm);
     }
 }
 
