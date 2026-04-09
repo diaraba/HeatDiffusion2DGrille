@@ -136,20 +136,14 @@ void MPISolver::initialize(const SimulationParams &params)
 
 void MPISolver::exchange_halos()
 {
-    // TODO: Implement blocking halo exchange
-    // Use MPI_Sendrecv for each neighbor direction
-    // This is simpler but may have more waiting
     int nx = local_nx;
     int ny = local_ny;
 
-    // Buffers temporaires
     std::vector<double> send_left(ny - 2), recv_left(ny - 2);
     std::vector<double> send_right(ny - 2), recv_right(ny - 2);
 
     std::vector<double> send_bottom(nx - 2), recv_bottom(nx - 2);
     std::vector<double> send_top(nx - 2), recv_top(nx - 2);
-
-    // Left  / RIGHT COLONNES
 
     for (int j = 1; j < ny - 1; j++)
     {
@@ -157,55 +151,62 @@ void MPISolver::exchange_halos()
         send_right[j - 1] = (*local_grid_old)(nx - 2, j);
     }
 
-    MPI_Sendrecv(send_left.data(), ny - 2, MPI_DOUBLE, neighbors[0], 0,
-                 recv_right.data(), ny - 2, MPI_DOUBLE, neighbors[1], 0,
-                 cart_comm, MPI_STATUS_IGNORE);
-    MPI_Sendrecv(send_right.data(), ny - 2, MPI_DOUBLE, neighbors[1], 1,
-                 recv_left.data(), ny - 2, MPI_DOUBLE, neighbors[0], 1,
-                 cart_comm, MPI_STATUS_IGNORE);
-    // Copie dans les halos gauches et droites
-    for (int j = 1; j < ny - 1; j++)
+    if (neighbors[0] != MPI_PROC_NULL || neighbors[1] != MPI_PROC_NULL)
     {
-        (*local_grid_old)(0, j) = recv_left[j - 1];
-        (*local_grid_old)(nx - 1, j) = recv_right[j - 1];
+        MPI_Sendrecv(send_left.data(), ny - 2, MPI_DOUBLE, neighbors[0], 0,
+                     recv_right.data(), ny - 2, MPI_DOUBLE, neighbors[1], 0,
+                     cart_comm, MPI_STATUS_IGNORE);
+
+        MPI_Sendrecv(send_right.data(), ny - 2, MPI_DOUBLE, neighbors[1], 1,
+                     recv_left.data(), ny - 2, MPI_DOUBLE, neighbors[0], 1,
+                     cart_comm, MPI_STATUS_IGNORE);
     }
 
-    // Bottom / Top colonnes
+    for (int j = 1; j < ny - 1; j++)
+    {
+        if (neighbors[0] != MPI_PROC_NULL)
+            (*local_grid_old)(0, j) = recv_left[j - 1];
+
+        if (neighbors[1] != MPI_PROC_NULL)
+            (*local_grid_old)(nx - 1, j) = recv_right[j - 1];
+    }
+
     for (int i = 1; i < nx - 1; i++)
     {
         send_bottom[i - 1] = (*local_grid_old)(i, 1);
         send_top[i - 1] = (*local_grid_old)(i, ny - 2);
     }
 
-    MPI_Sendrecv(send_bottom.data(), nx - 2, MPI_DOUBLE, neighbors[2], 2,
-                 recv_top.data(), nx - 2, MPI_DOUBLE, neighbors[3], 2,
-                 cart_comm, MPI_STATUS_IGNORE);
-    MPI_Sendrecv(send_top.data(), nx - 2, MPI_DOUBLE, neighbors[3], 3,
-                 recv_bottom.data(), nx - 2, MPI_DOUBLE, neighbors[2], 3,
-                 cart_comm, MPI_STATUS_IGNORE);
+    if (neighbors[2] != MPI_PROC_NULL || neighbors[3] != MPI_PROC_NULL)
+    {
+        MPI_Sendrecv(send_bottom.data(), nx - 2, MPI_DOUBLE, neighbors[2], 2,
+                     recv_top.data(), nx - 2, MPI_DOUBLE, neighbors[3], 2,
+                     cart_comm, MPI_STATUS_IGNORE);
 
-    // Copie dans les halos haut et bas
+        MPI_Sendrecv(send_top.data(), nx - 2, MPI_DOUBLE, neighbors[3], 3,
+                     recv_bottom.data(), nx - 2, MPI_DOUBLE, neighbors[2], 3,
+                     cart_comm, MPI_STATUS_IGNORE);
+    }
 
     for (int i = 1; i < nx - 1; i++)
     {
-        (*local_grid_old)(i, 0) = recv_bottom[i - 1];
-        (*local_grid_old)(i, ny - 2) = recv_top[i - 1];
+        if (neighbors[2] != MPI_PROC_NULL)
+            (*local_grid_old)(i, 0) = recv_bottom[i - 1];
+
+        if (neighbors[3] != MPI_PROC_NULL)
+            (*local_grid_old)(i, ny - 1) = recv_top[i - 1]; // 🔥 FIX
     }
 }
 
 void MPISolver::exchange_halos_nonblocking()
 {
-    // TODO: Implement non-blocking halo exchange
-    // Use MPI_Isend and MPI_Irecv with MPI_Waitall
-    // This allows overlap of communication and computation
-
     int nx = local_nx;
     int ny = local_ny;
 
     MPI_Request requests[8];
     int req_count = 0;
 
-    // Preparation des buffers
+    // Préparer buffers
     for (int j = 1; j < ny - 1; j++)
     {
         send_buffer_left[j - 1] = (*local_grid_old)(1, j);
@@ -218,33 +219,52 @@ void MPISolver::exchange_halos_nonblocking()
         send_buffer_top[i - 1] = (*local_grid_old)(i, ny - 2);
     }
 
-    //  Exchange with left and right neighbors
-    //  Exchange with bottom and top neighbors
+    // IRECV
+    if (neighbors[0] != MPI_PROC_NULL)
+        MPI_Irecv(recv_buffer_left, ny - 2, MPI_DOUBLE, neighbors[0], 0, cart_comm, &requests[req_count++]);
 
-    // Recv
-    MPI_Irecv(recv_buffer_left, ny - 2, MPI_DOUBLE, neighbors[0], 0, cart_comm, &requests[req_count++]);
-    MPI_Irecv(recv_buffer_right, ny - 2, MPI_DOUBLE, neighbors[1], 1, cart_comm, &requests[req_count++]);
-    MPI_Irecv(recv_buffer_bottom, nx - 2, MPI_DOUBLE, neighbors[2], 2, cart_comm, &requests[req_count++]);
-    MPI_Irecv(recv_buffer_top, nx - 2, MPI_DOUBLE, neighbors[3], 3, cart_comm, &requests[req_count++]);
-    // Send
-    MPI_Isend(send_buffer_left, ny - 2, MPI_DOUBLE, neighbors[0], 1, cart_comm, &requests[req_count++]);
-    MPI_Isend(send_buffer_right, ny - 2, MPI_DOUBLE, neighbors[1], 0, cart_comm, &requests[req_count++]);
-    MPI_Isend(send_buffer_bottom, nx - 2, MPI_DOUBLE, neighbors[2], 3, cart_comm, &requests[req_count++]);
-    MPI_Isend(send_buffer_top, nx - 2, MPI_DOUBLE, neighbors[3], 2, cart_comm, &requests[req_count++]);
-    //    Wait for all communications to complete
-    MPI_Waitall(req_count, requests, MPI_STATUSES_IGNORE);
+    if (neighbors[1] != MPI_PROC_NULL)
+        MPI_Irecv(recv_buffer_right, ny - 2, MPI_DOUBLE, neighbors[1], 1, cart_comm, &requests[req_count++]);
 
-    // Copie dans les halos droit, gauche, haut et bas
+    if (neighbors[2] != MPI_PROC_NULL)
+        MPI_Irecv(recv_buffer_bottom, nx - 2, MPI_DOUBLE, neighbors[2], 2, cart_comm, &requests[req_count++]);
 
+    if (neighbors[3] != MPI_PROC_NULL)
+        MPI_Irecv(recv_buffer_top, nx - 2, MPI_DOUBLE, neighbors[3], 3, cart_comm, &requests[req_count++]);
+
+    // ISEND
+    if (neighbors[0] != MPI_PROC_NULL)
+        MPI_Isend(send_buffer_left, ny - 2, MPI_DOUBLE, neighbors[0], 1, cart_comm, &requests[req_count++]);
+
+    if (neighbors[1] != MPI_PROC_NULL)
+        MPI_Isend(send_buffer_right, ny - 2, MPI_DOUBLE, neighbors[1], 0, cart_comm, &requests[req_count++]);
+
+    if (neighbors[2] != MPI_PROC_NULL)
+        MPI_Isend(send_buffer_bottom, nx - 2, MPI_DOUBLE, neighbors[2], 3, cart_comm, &requests[req_count++]);
+
+    if (neighbors[3] != MPI_PROC_NULL)
+        MPI_Isend(send_buffer_top, nx - 2, MPI_DOUBLE, neighbors[3], 2, cart_comm, &requests[req_count++]);
+
+    if (req_count > 0)
+        MPI_Waitall(req_count, requests, MPI_STATUSES_IGNORE);
+
+    // Copier dans halos
     for (int j = 1; j < ny - 1; j++)
     {
-        (*local_grid_old)(0, j) = recv_buffer_left[j - 1];
-        (*local_grid_old)(nx - 1, j) = recv_buffer_right[j - 1];
+        if (neighbors[0] != MPI_PROC_NULL)
+            (*local_grid_old)(0, j) = recv_buffer_left[j - 1];
+
+        if (neighbors[1] != MPI_PROC_NULL)
+            (*local_grid_old)(nx - 1, j) = recv_buffer_right[j - 1];
     }
+
     for (int i = 1; i < nx - 1; i++)
     {
-        (*local_grid_old)(i, 0) = recv_buffer_bottom[i - 1];
-        (*local_grid_old)(i, ny - 1) = recv_buffer_top[i - 1];
+        if (neighbors[2] != MPI_PROC_NULL)
+            (*local_grid_old)(i, 0) = recv_buffer_bottom[i - 1];
+
+        if (neighbors[3] != MPI_PROC_NULL)
+            (*local_grid_old)(i, ny - 1) = recv_buffer_top[i - 1]; // 🔥 FIX IMPORTANT
     }
 }
 
@@ -357,13 +377,14 @@ void MPISolver::gather_results()
     int local_size = nx_local * ny_local;
     std::vector<double> send_buffer(local_size);
     int idx = 0;
-    for (int i = 1; i < nx_local; i++)
+    for (int i = 1; i <= nx_local; i++)
     {
         for (int j = 1; j <= ny_local; j++)
         {
             send_buffer[idx++] = (*local_grid_old)(i, j);
         }
     }
+
     if (rank == 0)
     {
         // buffer global
@@ -399,8 +420,8 @@ void MPISolver::gather_results()
             {
                 for (int j = 0; j < ny_local; j++)
                 {
-                    int gi = si + 1;
-                    int gj = sj + 1;
+                    int gi = si + i;
+                    int gj = sj + i;
                     global_data[gi * global_ny + gj] = recv_buffer[idx++];
                 }
             }
