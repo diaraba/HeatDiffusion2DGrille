@@ -84,6 +84,7 @@ target_link_libraries(heat_mpi ${MPI_CXX_LIBRARIES})
 add_executable(heat_hybrid
     src/main.cpp
     src/solver.cpp
+    src/solver_mpi.cpp
     src/solver_hybrid.cpp
     ${COMMON_SOURCES}
 )
@@ -96,7 +97,7 @@ target_link_libraries(heat_hybrid ${MPI_CXX_LIBRARIES} OpenMP::OpenMP_CXX)
 # ============================================
 # Only build tests if they exist
 if(EXISTS ${CMAKE_SOURCE_DIR}/tests/test_sequential.cpp)
-    add_executable(test_seq tests/test_sequential.cpp src/solver_sequential.cpp ${COMMON_SOURCES})
+    add_executable(test_seq tests/test_sequential.cpp src/solver.cpp src/solver_sequential.cpp ${COMMON_SOURCES})
     target_link_libraries(test_seq)
 endif()
 
