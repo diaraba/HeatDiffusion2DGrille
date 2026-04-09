@@ -70,7 +70,7 @@ public:
 #ifdef USE_MPI
 class MPISolver : public Solver
 {
-private:
+protected:
     int rank, size;
     int coords[2]; // Cartesian coordinates
     int dims[2];

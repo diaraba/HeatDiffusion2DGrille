@@ -1,4 +1,4 @@
-#ifdef USE_MPI &&USE_OPENMP
+#if defined(USE_MPI) && defined(USE_OPENMP)
 #include "solver.h"
 #include <omp.h>
 #include <iostream>
