@@ -102,7 +102,7 @@ public:
     virtual void run(int num_steps) override;
     virtual void report_timing() const override;
 
-private:
+protected:
     void setup_cartesian_communicator();
     void exchange_halos();
     void exchange_halos_nonblocking();
