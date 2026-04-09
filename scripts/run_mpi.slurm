@@ -1,39 +1,79 @@
+# #!/bin/bash
+# #SBATCH --job-name=heat_mpi
+# #SBATCH --output=heat_mpi_%j.out
+# #SBATCH --error=heat_mpi_%j.err
+# #SBATCH --nodes=4
+# #SBATCH --ntasks-per-node=2
+# #SBATCH --cpus-per-task=1
+# #SBATCH --time=01:00:00
+# #SBATCH --partition=training
+
+# # Load modules (adjust based on your cluster)
+# module load gcc
+# module load openmpi
+
+# # Change to submission directory
+# cd $SLURM_SUBMIT_DIR
+
+# # Create build directory if needed
+# PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# cd "$PROJECT_DIR"
+# mkdir -p build
+# cd build
+
+# # Configure and build
+# cmake ..
+# make heat_mpi -j4
+
+# # Strong scaling test
+# for nodes in 1 2 4; do
+#     for tasks_per_node in 1 2 4; do
+#         total_ranks=$((nodes * tasks_per_node))
+#         echo "========================================"
+#         echo "Running with $nodes nodes, $tasks_per_node ranks per node (total: $total_ranks)"
+#         echo "========================================"
+        
+#         srun --nodes=$nodes --ntasks-per-node=$tasks_per_node \
+#              ./bin/heat_mpi --nx 8192 --ny 8192 --steps 100 --init 1 --boundary 0
+#     done
+# done
+
 #!/bin/bash
-#SBATCH --job-name=heat_mpi
-#SBATCH --output=heat_mpi_%j.out
-#SBATCH --error=heat_mpi_%j.err
-#SBATCH --nodes=4
-#SBATCH --ntasks-per-node=2
-#SBATCH --cpus-per-task=1
-#SBATCH --time=01:00:00
-#SBATCH --partition=training
 
-# Load modules (adjust based on your cluster)
-module load gcc
-module load openmpi
+echo "===== MPI Strong Scaling Benchmark ====="
 
-# Change to submission directory
-cd $SLURM_SUBMIT_DIR
+# Config
+EXEC="./build/bin/heat_mpi"
+NX=8192
+NY=8192
+STEPS=100
 
+# Compiler si besoin
+echo "Building project..."
+mkdir -p build
+cd build
+cmake ..
+make heat_mpi -j4
 # Create build directory if needed
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_DIR"
-mkdir -p build
-cd build
+echo "Build done."
+echo ""
 
-# Configure and build
-cmake ..
-make heat_mpi -j4
+# Strong scaling
+PROCS_LIST=(1 2 4 8 16)
 
-# Strong scaling test
-for nodes in 1 2 4; do
-    for tasks_per_node in 1 2 4; do
-        total_ranks=$((nodes * tasks_per_node))
-        echo "========================================"
-        echo "Running with $nodes nodes, $tasks_per_node ranks per node (total: $total_ranks)"
-        echo "========================================"
-        
-        srun --nodes=$nodes --ntasks-per-node=$tasks_per_node \
-             ./bin/heat_mpi --nx 8192 --ny 8192 --steps 100 --init 1 --boundary 0
-    done
+for p in "${PROCS_LIST[@]}"; do
+    echo "========================================"
+    echo "Running with $p MPI processes"
+    echo "========================================"
+
+    mpirun -np $p $EXEC \
+        --nx $NX \
+        --ny $NY \
+        --steps $STEPS \
+        --init 1 \
+        --boundary 0
+
+    echo ""
 done

@@ -5,7 +5,9 @@
 #include "boundary.h"
 #include "timer.h"
 #include "config.h"
-
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 // Base solver class (interface)
 class Solver
 {
@@ -78,8 +80,9 @@ private:
     int start_i, start_j; // Starting indices in global grid
     Grid *local_grid_old;
     Grid *local_grid_new;
+#ifdef USE_MPI
     MPI_Comm cart_comm;
-
+#endif
     // Halo exchange buffers
     double *send_buffer_left;
     double *send_buffer_right;
