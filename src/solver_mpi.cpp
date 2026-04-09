@@ -79,7 +79,7 @@ void MPISolver::initialize(const SimulationParams &params)
     // 5. Initialize local grid with appropriate part of global initial condition
     // 6. Allocate send/receive buffers
     // 7. Initialize base solver parameters (dx, dy, dt, factor)
-
+    Solver::initialize(params);
     global_nx = params.Nx;
     global_ny = params.Ny;
 

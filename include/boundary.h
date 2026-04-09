@@ -17,7 +17,7 @@ public:
 
     // Apply boundary conditions to a grid
     void apply(Grid &grid) const;
-
+ 
     // Getters
     inline int get_type() const { return boundary_type; }
     inline double get_T_right() const { return T_right; }
