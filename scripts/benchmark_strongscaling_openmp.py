@@ -7,22 +7,28 @@ import re
 EXEC = "./build/bin/heat_omp"
 THREADS = [1, 2, 4, 8, 16]
 
+
 def run_case(threads):
     env = {"OMP_NUM_THREADS": str(threads)}
-    
+
     cmd = [
         EXEC,
-        "--nx", "4096",
-        "--ny", "4096",
-        "--steps", "100",
-        "--init", "1",
-        "--boundary", "0"
+        "--nx",
+        "4096",
+        "--ny",
+        "4096",
+        "--steps",
+        "100",
+        "--init",
+        "1",
+        "--boundary",
+        "0",
     ]
-    
+
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
-    
+
     output = result.stdout
-    
+
     # Extraire temps total
     match = re.search(r"Total:.*?([0-9]+\.[0-9]+)", output)
     if match:
@@ -53,7 +59,8 @@ def main():
         rows.append([cores, t, speedup, efficiency])
 
     # Écriture CSV
-    with open("openmp_results.csv", "w", newline="") as f:
+    os.makedirs("resultats", exist_ok=True)
+    with open("resultats/openmp_strongscaling_results.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["cores", "time", "speedup", "efficiency"])
         writer.writerows(rows)
