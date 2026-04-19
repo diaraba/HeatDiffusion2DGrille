@@ -3,6 +3,7 @@
 import subprocess
 import csv
 import re
+import os 
 
 EXEC = "./build/bin/heat_omp"
 THREADS = [1, 2, 4, 8, 16]
