@@ -12,14 +12,25 @@ CORES = [1, 2, 4, 8, 16]
 BASE_SIZE = 1024
 STEPS = 100
 
-def run_case(cores):
-    size = int(BASE_SIZE * math.sqrt(cores))
+def compute_size(cores):
+    dims_x = int(math.sqrt(cores))
+    while cores % dims_x != 0:
+        dims_x -= 1
+    dims_y = cores // dims_x
 
+    base = 1024
+    nx = base * dims_x
+    ny = base * dims_y
+
+    return nx, ny
+def run_case(cores):
+    # size = int(BASE_SIZE * math.sqrt(cores))
+    nx, ny = compute_size(cores)
     cmd = [
         "mpirun", "-np", str(cores),
         EXEC,
-        "--nx", str(size),
-        "--ny", str(size),
+        "--nx", str(nx),
+        "--ny", str(ny),
         "--steps", str(STEPS),
         "--init", "1",
         "--boundary", "0"
