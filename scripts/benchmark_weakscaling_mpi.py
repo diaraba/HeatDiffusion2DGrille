@@ -44,11 +44,11 @@ def run_case(cores):
     if match:
         total_time = float(match.group(1))
         time_per_iter = total_time / STEPS
-        return size, total_time, time_per_iter
+        return nx, total_time, time_per_iter
     else:
         print("Erreur parsing")
         print(output)
-        return size, None, None
+        return nx, None, None
 
 
 def main():
