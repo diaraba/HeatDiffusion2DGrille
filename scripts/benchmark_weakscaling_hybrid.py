@@ -20,13 +20,11 @@ BASE = 1024
 STEPS = 100
 
 def compute_size(total_cores):
-    size = int(BASE * math.sqrt(total_cores))
+    raw = BASE * math.sqrt(total_cores)
 
-    # ajustement simple pour divisibilité
-    while size % 2 != 0:
-        size += 1
-
-    return size, size
+    # 🔥 arrondi propre
+    grid = int(round(raw / 256) * 256)
+    return grid, grid
 
 
 def run_case(ranks, threads):
