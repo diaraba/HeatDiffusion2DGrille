@@ -5,29 +5,21 @@ import csv
 import re
 
 EXEC = "./build/bin/heat_mpi"
-CORES = [1, 2, 4, 8, 16, 32]
+CORES = [1, 2, 4, 8, 16]
 
 NX = 8192
 NY = 8192
 STEPS = 100
 
-
 def run_case(cores):
     cmd = [
-        "mpirun",
-        "-np",
-        str(cores),
+        "mpirun", "-np", str(cores),
         EXEC,
-        "--nx",
-        str(NX),
-        "--ny",
-        str(NY),
-        "--steps",
-        str(STEPS),
-        "--init",
-        "1",
-        "--boundary",
-        "0",
+        "--nx", str(NX),
+        "--ny", str(NY),
+        "--steps", str(STEPS),
+        "--init", "1",
+        "--boundary", "0"
     ]
 
     result = subprocess.run(cmd, capture_output=True, text=True)
@@ -62,7 +54,6 @@ def main():
         rows.append([cores, t, speedup, efficiency])
 
     import os
-
     os.makedirs("results", exist_ok=True)
 
     with open("results/mpi_strongscaling.csv", "w", newline="") as f:
