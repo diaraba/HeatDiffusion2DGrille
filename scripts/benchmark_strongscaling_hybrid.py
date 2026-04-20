@@ -14,8 +14,6 @@ CONFIGS = [
     (2, 2),
     (4, 2),
     (4, 4),
-    (8, 2),
-    (8, 4),
 ]
 
 NX = 4096
@@ -41,7 +39,7 @@ def run_case(ranks, threads):
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     output = result.stdout + result.stderr
 
-    match = re.search(r"TOTAL_TIME=([0-9]+\.[0-9]+)", output)
+    match = re.search(r"Total:([0-9]+\.[0-9]+)", output)
 
     if match:
         return float(match.group(1))
