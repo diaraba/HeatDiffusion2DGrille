@@ -19,7 +19,7 @@ cd build
 
 cmake ..
 make heat_hybrid -j4
-
+ 
 # Test different MPI/OpenMP ratios
 for nodes in 1 2 4; do
     for tasks_per_node in 1 2 4; do
