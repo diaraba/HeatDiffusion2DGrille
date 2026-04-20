@@ -7,8 +7,8 @@ import re
 EXEC = "./build/bin/heat_mpi"
 CORES = [1, 2, 4, 8, 16]
 
-NX = 4096
-NY = 4096
+NX = 8192
+NY = 8192
 STEPS = 100
 
 def run_case(cores):
