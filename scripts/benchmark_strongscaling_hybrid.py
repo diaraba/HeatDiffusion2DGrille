@@ -39,8 +39,7 @@ def run_case(ranks, threads):
     result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     output = result.stdout + result.stderr
 
-    match = re.search(r"Total:([0-9]+\.[0-9]+)", output)
-
+    match = re.search(r"Total:.*?([0-9]+\.[0-9]+)", output, re.DOTALL)
     if match:
         return float(match.group(1))
     else:
