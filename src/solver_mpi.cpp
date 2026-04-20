@@ -377,9 +377,9 @@ void MPISolver::gather_results()
     int local_size = nx_local * ny_local;
     std::vector<double> send_buffer(local_size);
     int idx = 0;
-    for (int i = 0; i <= nx_local; i++)
+    for (int i = 1; i <= nx_local; i++)
     {
-        for (int j = 0; j <= ny_local; j++)
+        for (int j = 1; j <= ny_local; j++)
         {
             send_buffer[idx++] = (*local_grid_old)(i, j);
         }
@@ -421,7 +421,7 @@ void MPISolver::gather_results()
                 for (int j = 0; j < ny_local; j++)
                 {
                     int gi = si + i;
-                    int gj = sj + j;
+                    int gj = sj + i;
                     global_data[gi * global_ny + gj] = recv_buffer[idx++];
                 }
             }
