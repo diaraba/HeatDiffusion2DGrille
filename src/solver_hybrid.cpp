@@ -59,7 +59,7 @@ void HybridSolver::time_step()
     {
         for (int j = 1; j < ny - 1; j++)
         {
-            (*local_grid_new)(1, j) = (bc->get_type() == 0) ? bc->get_T_left() : (*local_grid_old)(2, j);
+            (*local_grid_new)(1, j) = (bc->get_type() == 0) ? bc->get_T_left() : (*local_grid_new)(2, j);
         }
     }
 
@@ -68,7 +68,7 @@ void HybridSolver::time_step()
     {
         for (int j = 1; j < ny - 1; j++)
         {
-            (*local_grid_new)(nx - 2, j) = (bc->get_type() == 0) ? bc->get_T_right() : (*local_grid_old)(nx - 3, j);
+            (*local_grid_new)(nx - 2, j) = (bc->get_type() == 0) ? bc->get_T_right() : (*local_grid_new)(nx - 3, j);
         }
     }
 
@@ -77,7 +77,7 @@ void HybridSolver::time_step()
     {
         for (int i = 1; i < nx - 1; i++)
         {
-            (*local_grid_new)(i, 1) = (bc->get_type() == 0) ? bc->get_T_bottom() : (*local_grid_old)(i, 2);
+            (*local_grid_new)(i, 1) = (bc->get_type() == 0) ? bc->get_T_bottom() : (*local_grid_new)(i, 2);
         }
     }
     //  Top
@@ -85,7 +85,7 @@ void HybridSolver::time_step()
     {
         for (int i = 1; i < nx - 1; i++)
         {
-            (*local_grid_new)(i, ny - 2) = (bc->get_type() == 0) ? bc->get_T_top() : (*local_grid_old)(i, ny - 3);
+            (*local_grid_new)(i, ny - 2) = (bc->get_type() == 0) ? bc->get_T_top() : (*local_grid_new)(i, ny - 3);
         }
     }
     // Need to apply only on physical boundaries
