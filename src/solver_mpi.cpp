@@ -363,7 +363,7 @@ void MPISolver::run(int num_steps)
     total_timer.stop();
 
     // Gather results to rank 0 for output/validation
-    gather_results();
+    // gather_results();
 }
 
 void MPISolver::gather_results()
