@@ -15,9 +15,9 @@ def run_case(threads):
     cmd = [
         EXEC,
         "--nx",
-        "4096",
+        "8192",
         "--ny",
-        "4096",
+        "8192",
         "--steps",
         "100",
         "--init",
