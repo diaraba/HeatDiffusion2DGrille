@@ -34,7 +34,7 @@ void HybridSolver::time_step()
 
 // TODO: Add OpenMP parallelization here
 // Be careful with collapse(2) and thread safety
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for collapse(2) schedule(static)
     for (int i = 1; i < nx - 1; i++)
     {
         for (int j = 1; j < ny - 1; j++)

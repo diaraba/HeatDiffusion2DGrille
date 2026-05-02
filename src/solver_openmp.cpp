@@ -20,7 +20,7 @@ void OpenMPSolver::time_step()
     // Experiment with different scheduling policies
     // Avoid false sharing by using local variables
 
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for collapse(2) schedule(static)
     for (int i = 1; i < nx - 1; i++)
     {
         for (int j = 1; j < ny - 1; j++)

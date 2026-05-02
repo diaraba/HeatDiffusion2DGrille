@@ -52,6 +52,10 @@ void MPISolver::setup_cartesian_communicator()
     MPI_Cart_shift(cart_comm, 1, 1, &neighbors[2], &neighbors[3]);
 }
 
+
+
+
+
 void MPISolver::initialize(const SimulationParams &params)
 {
     Solver::initialize(params);

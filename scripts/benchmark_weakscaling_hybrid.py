@@ -91,7 +91,7 @@ def main():
             ]
         )
         writer.writerows(results)
-
+    
     print("Saved to results/hybrid_weakscaling.csv")
 
 
